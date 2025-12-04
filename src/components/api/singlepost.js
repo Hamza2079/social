@@ -1,13 +1,13 @@
 import axios from "axios";
 
-export async function getAllPosts() {
+
+export async function getSinglePost(id) {
     const token = localStorage.getItem('token');
-    let {data} = await axios.get('https://linked-posts.routemisr.com/posts?limit=50',{
+    let {data} = await axios.get(`https://linked-posts.routemisr.com/posts/${id}`,{
         headers: {
             token: token
         }
     }) 
     return data;
-    
-}
 
+}

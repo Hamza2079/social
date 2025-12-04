@@ -10,6 +10,7 @@ import Register from './components/Register/Register'
 import Notfound from './components/Notfound/Notfound'
 import ProtectedRoute from './components/protectedRoute/protectedRoute'
 import ProtectedAuth from './components/protectedAuth/protectedAuth'
+import PostDetails from './components/postDetails/postDetails'
 function App() {
 
 
@@ -18,6 +19,7 @@ function App() {
       {path:'',element:<ProtectedAuth><Login/></ProtectedAuth>},
       {path:'home',element:<ProtectedRoute><Home/></ProtectedRoute>},
       {path:'profile',element:<ProtectedRoute><Profile/></ProtectedRoute>},
+      {path:'postDetails/:id',element:<ProtectedRoute><PostDetails/></ProtectedRoute>},
       {path:'register',element:<ProtectedAuth><Register/></ProtectedAuth>},
       {path:'*',element:<Notfound/>},
     ]}

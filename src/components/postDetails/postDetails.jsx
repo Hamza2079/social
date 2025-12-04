@@ -1,0 +1,49 @@
+import { useQuery } from '@tanstack/react-query';
+import React from 'react'
+import { useParams, Link } from 'react-router-dom';
+import { getSinglePost } from '../api/singlepost';
+import Loader from "../loader/loader";
+import Errorpage from "../errorpage/errorpage";
+import SinglePost from '../singlePost/singlePost';
+import Commentitem from '../commentitem/commentitem';
+
+export default function PostDetails() {
+  const {id} = useParams();
+  const {data,isLoading,isError,error}=useQuery({
+    queryKey: ['single post', id],
+    queryFn: () => getSinglePost(id),
+    select: (data) => data.post
+  })
+
+  if (isLoading) {
+    return <Loader/>
+  }
+  if(isError){
+    return <Errorpage title="Error" message={error.message}/>
+  }
+
+  return (
+    <div className="min-h-[calc(100vh-80px)] flex items-start justify-center py-8 md:py-12">
+      <div className="w-full max-w-3xl mx-auto">
+        {/* Back link */}
+        <div className="mb-4">
+          <Link
+            to="/home"
+            className="inline-flex items-center gap-2 text-xs text-sky-300 hover:text-sky-100
+                       px-3 py-1 rounded-full bg-slate-900/70 border border-sky-500/40"
+          >
+            ← Back to feed
+          </Link>
+        </div>
+
+        <div className="relative rounded-3xl bg-slate-900 border border-slate-700
+                        shadow-[0_18px_45px_rgba(15,23,42,0.9)] p-5 md:p-7">
+          <SinglePost post={data}/>
+          <div className="mt-5 pt-4 border-t border-slate-700/70">
+            <Commentitem post={data}/>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

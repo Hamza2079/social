@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import React, { useContext } from 'react'
 import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import * as z from "zod";
 import { tokencontext } from '../../context/tokenContext.jsx';
 
@@ -17,12 +17,13 @@ export default function Register() {
   const {register,handleSubmit,formState:{errors,isSubmitting},setError}=useForm({
     resolver:zodResolver(schema)
   })
+
   async function onSubmit(values){
     console.log(values);
     try {
-        const {data} = await axios.post('https://linked-posts.routemisr.com/users/signin',values)
-      console.log(data);
-      if (data.message=='success') {
+      const {data,status} = await axios.post('https://linked-posts.routemisr.com/users/signin',values)
+      console.log({data,status});
+      if (status==200) {
         console.log(data);
         setToken(data.token)
         localStorage.setItem('token',data.token)
@@ -32,21 +33,75 @@ export default function Register() {
       console.error("🟥 Error: ", e)
       setError('main',{message:e.response.data.error})
     }
-    
   }
 
   return (
-    <div className='w-[60%] my-40 mx-auto my-8 p-5 shadow-lg rounded-2xl'>
-      <h1 className='text-sky-800 text-3xl font-bold'>Log in</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register('email')} type="email" className="input my-4 w-full" placeholder="type ur email" />
-        {errors.email && <p className='text-red-600'>{errors.email.message}</p>}
-        <input {...register('password')} type="password" className="input my-4 w-full" placeholder="type ur password" />
-        {errors.password && <p className='text-red-600'>{errors.password.message}</p>}
-        <button className='text-white bg-sky-600 hover:bg-sky-900 p-2 my-3 rounded cursor-pointer'>{isSubmitting? "loading...":"SignIn"}</button>
-        {errors.main && <p className='text-red-600 text-center'>{errors.main.message}</p>}
-        <p className='text-center'>Don't have an account? <a href='/register' className='text-sky-600'>Register</a></p>
-    </form>
+    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="w-full max-w-md mx-auto px-6 py-8 rounded-3xl bg-slate-900/70
+                      border border-sky-500/40 shadow-[0_25px_80px_rgba(8,47,73,0.95)]
+                      backdrop-blur-2xl">
+        <div className="mb-6 text-center">
+          <p className="text-[11px] uppercase tracking-[0.25em] text-sky-300/80 mb-2">
+            Welcome back
+          </p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-50">
+            Sign in to <span className="text-sky-300">Linked/Post</span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-2">
+            Continue where you left off. Your feed is waiting.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-slate-200 mb-1 block">
+              Email
+            </label>
+            <input
+              {...register('email')}
+              type="email"
+              className="input input-bordered input-primary w-full bg-slate-900/60 text-slate-50 placeholder:text-slate-500"
+              placeholder="name@domain.com"
+            />
+            {errors.email && <p className="mt-1 text-xs text-rose-400">{errors.email.message}</p>}
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-200 mb-1 block">
+              Password
+            </label>
+            <input
+              {...register('password')}
+              type="password"
+              className="input input-bordered input-primary w-full bg-slate-900/60 text-slate-50 placeholder:text-slate-500"
+              placeholder="••••••••"
+            />
+            {errors.password && <p className="mt-1 text-xs text-rose-400">{errors.password.message}</p>}
+          </div>
+
+          {errors.main && (
+            <p className="text-sm text-center text-rose-400 bg-rose-500/10 border border-rose-500/40 rounded-xl py-2 px-3">
+              {errors.main.message}
+            </p>
+          )}
+
+          <button
+            className="btn btn-primary w-full mt-2 bg-sky-500
+                       border-none text-slate-950 font-semibold tracking-wide
+                       hover:bg-sky-400 hover:shadow-[0_12px_30px_rgba(15,23,42,0.9)]
+                       disabled:opacity-60"
+          >
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        <p className="mt-5 text-center text-xs text-slate-400">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="text-sky-300 hover:text-sky-200 font-medium">
+            Create one
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }
