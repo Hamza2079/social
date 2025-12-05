@@ -4,6 +4,7 @@ import Loader from "../loader/loader";
 import SinglePost from "../singlePost/singlePost";
 import { Link } from "react-router-dom";
 import Commentitem from "../commentitem/commentitem";
+import CreatePost from "../createPost/createPost";
 
 export default function Home() {
 
@@ -25,7 +26,7 @@ export default function Home() {
     // retryDelay: 2000,
     // refetchInterval: 3000,
   })
-console.log("🟩 data: ", data?.posts)
+console.log("🟩 data: ", data)
 
 
   if(isLoading){
@@ -39,7 +40,7 @@ console.log("🟩 data: ", data?.posts)
 
   return (
     <div className="min-h-[calc(100vh-80px)] py-6 md:py-10">
-
+      <CreatePost query='all posts'/>
 
       <div className="max-w-3xl mx-auto space-y-8 md:space-y-10">
         {data?.map((post) => (

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import Loader from '../loader/loader'
 import Errorpage from '../errorpage/errorpage'
 import SinglePost from '../singlePost/singlePost'
+import CreatePost from '../createPost/createPost'
 
 export default function Profile() {
   
@@ -69,12 +70,13 @@ if(isError){
         </div>
 
         <div className="mt-6 space-y-6 pb-10">
+          <CreatePost query={'user posts'}/>
           {data?.posts.map((post, index) => (
             <div
-              key={index}
-              className="bg-slate-900 border border-slate-700 rounded-3xl p-5
-                         shadow-[0_18px_45px_rgba(15,23,42,0.9)]
-                         hover:border-sky-400 hover:-translate-y-[2px] transition-all duration-300"
+            key={index}
+            className="bg-slate-900 border border-slate-700 rounded-3xl p-5
+            shadow-[0_18px_45px_rgba(15,23,42,0.9)]
+            hover:border-sky-400 hover:-translate-y-[2px] transition-all duration-300"
             >
               <SinglePost post={post}/>
             </div>
