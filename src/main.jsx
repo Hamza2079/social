@@ -10,10 +10,13 @@ import {
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
 
+import ThemeContextProvider from './context/ThemeContext.jsx'
+
 // Create a client
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')).render(
+    <ThemeContextProvider>
     <Tokencontextprovider>
   <QueryClientProvider client={queryClient}>
     <StrictMode>
@@ -47,5 +50,6 @@ createRoot(document.getElementById('root')).render(
 
   
   </Tokencontextprovider>
+  </ThemeContextProvider>
 
 )

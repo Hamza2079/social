@@ -1,9 +1,17 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { tokencontext } from '../../context/tokenContext'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createPost } from '../api/createpost'
+import { updatePost } from '../api/updatepost'
 import toast from 'react-hot-toast'
-export default function CreatePost({query}) {
+export default function CreatePost({
+  query = 'all posts',
+  mode = 'create',
+  post = null,
+  isOpen,
+  onClose,
+  onSuccess,
+}) {
   const { userData } = useContext(tokencontext)
   const [postBody, setPostBody] = useState('')
   const [imagePreview, setImagePreview] = useState(null)
@@ -11,11 +19,27 @@ export default function CreatePost({query}) {
   const [isClosing, setIsClosing] = useState(false)
   const [image, setImage] = useState(null)
   const queryclient = useQueryClient()
-  const {isLoading, mutate} = useMutation({
-    mutationFn:createPost,
+  const isControlled = typeof isOpen === 'boolean'
+  const isEditMode = mode === 'edit' && post?._id
+
+  useEffect(() => {
+    if (isEditMode && post) {
+      setPostBody(post.body || '')
+      setImagePreview(post.image || null)
+      setImage(null)
+    }
+  }, [isEditMode, post])
+
+  const {isPending, mutate} = useMutation({
+    mutationFn: (payload) => {
+      if (isEditMode) {
+        return updatePost(payload.formdata, payload.postid)
+      }
+      return createPost(payload.formdata)
+    },
     onSuccess:()=>{
       // Show success toast
-      toast.success('Post created successfully!', {
+      toast.success(isEditMode ? 'Post updated successfully!' : 'Post created successfully!', {
         icon: '✅',
       })
       
@@ -23,13 +47,27 @@ export default function CreatePost({query}) {
       setPostBody('')
       setImagePreview(null)
       setImage(null)
-      setShowcreatepost(false)
+      if (!isControlled) {
+        setShowcreatepost(false)
+      }
       handleClose()
       
       // Invalidate queries to refresh the feed
       queryclient.invalidateQueries({
         queryKey:[query]
       })
+      queryclient.invalidateQueries({
+        queryKey:['all posts']
+      })
+      queryclient.invalidateQueries({
+        queryKey:['user posts']
+      })
+      if (isEditMode && post?._id) {
+        queryclient.invalidateQueries({
+          queryKey:['single post', post._id]
+        })
+      }
+      if (onSuccess) onSuccess()
     },
     onError: (error) => {
       // Show error toast
@@ -56,11 +94,16 @@ export default function CreatePost({query}) {
 
 
   const handleOpen = () => {
+    if (isControlled) return
     setIsClosing(false)
     setShowcreatepost(true)
   }
 
   const handleClose = () => {
+    if (isControlled) {
+      if (onClose) onClose()
+      return
+    }
     setIsClosing(true)
     setTimeout(() => {
       setShowcreatepost(false)
@@ -73,24 +116,28 @@ export default function CreatePost({query}) {
     if (postBody) {
       formdata.append('body', postBody);
     }
-        if (image) {
+    if (image) {
       formdata.append('image', image);
     }
-    mutate(formdata);
+    if (isEditMode) {
+      mutate({formdata, postid: post._id});
+    } else {
+      mutate({formdata});
+    }
     }
 
   return (
     
     <>
     {
-      showcreatepost ? (
+      (isControlled ? isOpen : showcreatepost) ? (
       <div className={`py-6 md:py-10 transition-all duration-300 ease-out ${
         isClosing ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0'
       }`}>
       <div className="max-w-3xl mx-auto px-4">
-        <div className={`bg-slate-900 border border-slate-700 rounded-3xl p-5 md:p-7
-                        shadow-[0_18px_45px_rgba(15,23,42,0.9)]
-                        hover:border-sky-400 transition-all duration-300 ease-out ${
+        <div className={`bg-base-200 border border-base-300 rounded-3xl p-5 md:p-7
+                        shadow-xl
+                        hover:border-primary/50 transition-all duration-300 ease-out ${
                           isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
                         }`}>
           
@@ -102,15 +149,15 @@ export default function CreatePost({query}) {
               className="w-12 h-12 md:w-14 md:h-14 rounded-2xl border border-sky-400/70 object-cover shadow-[0_8px_30px_rgba(56,189,248,0.35)]"
             />
             <div>
-              <p className="font-semibold text-slate-50 text-base md:text-lg">
+              <p className="font-semibold text-base-content text-base md:text-lg">
                 {userData?.name}
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs opacity-60">
                 Create a new post
               </p>
             </div>
-            <button onClick={handleClose} className="px-6 ml-auto py-2 fle rounded-xl bg-sky-500 text-slate-950 text-sm font-semibold
-            hover:bg-sky-400 hover:shadow-[0_12px_30px_rgba(56,189,248,0.4)]
+            <button onClick={handleClose} className="px-6 ml-auto py-2 rounded-xl bg-primary text-primary-content text-sm font-semibold
+            hover:shadow-lg
             disabled:opacity-50 disabled:cursor-not-allowed
             transition-all duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -126,19 +173,19 @@ export default function CreatePost({query}) {
               onChange={(e) => setPostBody(e.target.value)}
               placeholder="What's on your mind?"
               className="w-full min-h-[120px] md:min-h-[150px] p-4 rounded-2xl
-                         bg-slate-950/60 border border-slate-700/80
-                         text-slate-50 placeholder:text-slate-500
-                         focus:outline-none focus:border-sky-400/60 focus:ring-2 focus:ring-sky-400/20
+                         bg-base-100 border border-base-300
+                         text-base-content placeholder:text-base-content/50
+                         focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
                          resize-none transition-all duration-200"
             />
-            <p className="mt-2 text-xs text-slate-400 text-right">
+            <p className="mt-2 text-xs opacity-60 text-right">
               {postBody.length} characters
             </p>
           </div>
 
           {/* Image preview */}
           {imagePreview && (
-            <div className="mb-4 relative rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900 shadow-[0_18px_60px_rgba(15,23,42,0.95)]">
+            <div className="mb-4 relative rounded-2xl overflow-hidden border border-base-300 bg-base-300 shadow-md">
               <img
                 src={imagePreview}
                 alt="Preview"
@@ -168,11 +215,11 @@ export default function CreatePost({query}) {
           )}
 
           {/* Action buttons */}
-          <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-700/60">
+          <div className="flex items-center justify-between gap-4 pt-4 border-t border-base-300">
             {/* Image upload button */}
             <label className="flex items-center gap-2 px-4 py-2 rounded-xl
-                            bg-slate-900/80 border border-sky-400/50 text-sky-100 text-sm
-                            hover:bg-slate-800 hover:border-sky-400 cursor-pointer
+                            bg-base-300 border border-base-300 text-base-content text-sm
+                            hover:bg-base-200 cursor-pointer
                             transition-all duration-200">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -199,29 +246,28 @@ export default function CreatePost({query}) {
             {/* Submit button */}
             <button
             onClick={handleSubmit}
-              disabled={!postBody.trim() || isLoading}
-              className="px-6 py-2 rounded-xl bg-sky-500 text-slate-950 text-sm font-semibold
-                         hover:bg-sky-400 hover:shadow-[0_12px_30px_rgba(56,189,248,0.4)]
+              disabled={!postBody.trim() || isPending}
+              className="px-6 py-2 rounded-xl bg-primary text-primary-content text-sm font-semibold
+                         hover:shadow-lg
                          disabled:opacity-50 disabled:cursor-not-allowed
                          transition-all duration-200"
             >
-              {isLoading ? 'Posting...' : 'Post'}
+              {isPending ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update' : 'Post')}
             </button>
           </div>
         </div>
       </div>
     </div>
     ) : (
-      <div className={`flex-col my-6 max-w-3xl mx-auto justify-center transition-all duration-300 ease-out opacity-100 translate-y-0`}>   
-      <button onClick={handleOpen} className="flex items-center justify-between px-6 w-full py-2 fle rounded-xl bg-slate-900 text-slate-950 text-sm font-semibold
-      hover:border border-sky-400/70 hover:shadow-[0_12px_30px_rgba(56,189,248,0.4)]
-      disabled:opacity-50 disabled:cursor-not-allowed
-      transition-all duration-200">
-<input className='input rounded-2xl border border-sky-400/70 disabled:opacity-50 disabled:cursor-not-allowed w-7/8 bg-slate-900/60 text-slate-50 placeholder:text-slate-500' type="text" placeholder="What's on your mind?" />
-<img src={userData?.photo} alt="user" className='w-12 h-12 md:w-14 md:h-14 rounded-2xl border border-sky-400/70 object-cover shadow-[0_8px_30px_rgba(56,189,248,0.35)]' />
-</button>
-</div>
-   
+      !isControlled && (
+        <div className={`flex-col my-6 max-w-3xl mx-auto justify-center transition-all duration-300 ease-out opacity-100 translate-y-0`}>   
+        <button onClick={handleOpen} className="flex items-center justify-between px-6 w-full py-2 rounded-xl bg-base-200 text-base-content text-sm font-semibold
+        hover:border border-primary transition-all duration-200">
+  <input className='input rounded-2xl border border-base-300 disabled:opacity-50 disabled:cursor-not-allowed w-7/8 bg-base-100 text-base-content placeholder:text-base-content/50' type="text" placeholder="What's on your mind?" />
+  <img src={userData?.photo} alt="user" className='w-12 h-12 md:w-14 md:h-14 rounded-2xl border border-base-300 object-cover shadow-md' />
+  </button>
+  </div>
+      )
     )
     }
     

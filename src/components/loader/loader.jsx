@@ -1,23 +1,95 @@
 import React from 'react'
-import { PulseLoader } from 'react-spinners'
 
 export default function Loader() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center
-                    bg-slate-950 text-sky-100">
-      <div className="relative mb-6">
-        <div className="w-28 h-28 rounded-full bg-slate-900/80 border border-sky-500/50
-                        shadow-[0_0_50px_rgba(56,189,248,0.7)] flex items-center justify-center">
-          <PulseLoader color="#38bdf8" size={10} />
+    <div className="min-h-screen bg-base-100 py-6 md:py-10">
+      <div className="max-w-3xl mx-auto space-y-8 md:space-y-10 px-4">
+        {/* Skeleton Post 1 */}
+        <div className="card bg-base-200 border border-base-300 shadow-xl animate-pulse">
+          <div className="card-body p-5 md:p-7">
+            {/* User Info Skeleton */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-base-300"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-base-300 rounded w-32"></div>
+                <div className="h-3 bg-base-300 rounded w-24"></div>
+              </div>
+            </div>
+
+            {/* Post Content Skeleton */}
+            <div className="space-y-3 mb-4">
+              <div className="h-4 bg-base-300 rounded w-full"></div>
+              <div className="h-4 bg-base-300 rounded w-5/6"></div>
+              <div className="h-4 bg-base-300 rounded w-4/6"></div>
+            </div>
+
+            {/* Image Skeleton */}
+            <div className="h-64 bg-base-300 rounded-2xl mb-4"></div>
+
+            {/* Actions Skeleton */}
+            <div className="flex gap-4 pt-4 border-t border-base-300">
+              <div className="h-8 bg-base-300 rounded-full w-28"></div>
+              <div className="h-8 bg-base-300 rounded-full w-24"></div>
+            </div>
+          </div>
         </div>
-        <div className="absolute inset-0 blur-3xl opacity-40 bg-sky-500/50 rounded-full -z-10" />
+
+        {/* Skeleton Post 2 */}
+        <div className="card bg-base-200 border border-base-300 shadow-xl animate-pulse">
+          <div className="card-body p-5 md:p-7">
+            {/* User Info Skeleton */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-base-300"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-base-300 rounded w-32"></div>
+                <div className="h-3 bg-base-300 rounded w-24"></div>
+              </div>
+            </div>
+
+            {/* Post Content Skeleton */}
+            <div className="space-y-3 mb-4">
+              <div className="h-4 bg-base-300 rounded w-full"></div>
+              <div className="h-4 bg-base-300 rounded w-4/5"></div>
+            </div>
+
+            {/* Actions Skeleton */}
+            <div className="flex gap-4 pt-4 border-t border-base-300">
+              <div className="h-8 bg-base-300 rounded-full w-28"></div>
+              <div className="h-8 bg-base-300 rounded-full w-24"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Skeleton Post 3 */}
+        <div className="card bg-base-200 border border-base-300 shadow-xl animate-pulse">
+          <div className="card-body p-5 md:p-7">
+            {/* User Info Skeleton */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-base-300"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-base-300 rounded w-32"></div>
+                <div className="h-3 bg-base-300 rounded w-24"></div>
+              </div>
+            </div>
+
+            {/* Post Content Skeleton */}
+            <div className="space-y-3 mb-4">
+              <div className="h-4 bg-base-300 rounded w-full"></div>
+              <div className="h-4 bg-base-300 rounded w-3/4"></div>
+              <div className="h-4 bg-base-300 rounded w-2/3"></div>
+            </div>
+
+            {/* Image Skeleton */}
+            <div className="h-48 bg-base-300 rounded-2xl mb-4"></div>
+
+            {/* Actions Skeleton */}
+            <div className="flex gap-4 pt-4 border-t border-base-300">
+              <div className="h-8 bg-base-300 rounded-full w-28"></div>
+              <div className="h-8 bg-base-300 rounded-full w-24"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <p className="text-xs tracking-[0.25em] uppercase text-slate-400 mb-1">
-        Syncing feed
-      </p>
-      <p className="text-sm text-slate-300">
-        Loading your experience…
-      </p>
     </div>
   )
 }

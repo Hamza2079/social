@@ -15,12 +15,12 @@ function App() {
 
 
   const routes = createBrowserRouter([
+    {path:'',element:<ProtectedAuth><Login/></ProtectedAuth>},
+    {path:'register',element:<ProtectedAuth><Register/></ProtectedAuth>},
     {path: '',element:<Layout/>,children:[
-      {path:'',element:<ProtectedAuth><Login/></ProtectedAuth>},
       {path:'home',element:<ProtectedRoute><Home/></ProtectedRoute>},
       {path:'profile',element:<ProtectedRoute><Profile/></ProtectedRoute>},
       {path:'postDetails/:id',element:<ProtectedRoute><PostDetails/></ProtectedRoute>},
-      {path:'register',element:<ProtectedAuth><Register/></ProtectedAuth>},
       {path:'*',element:<Notfound/>},
     ]}
   ])

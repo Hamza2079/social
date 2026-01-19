@@ -1,8 +1,8 @@
 import axios from "axios";
 
-export async function getAllPosts() {
+export async function getPostComments(postId) {
     const token = localStorage.getItem('token');
-    let {data} = await axios.get('https://linked-posts.routemisr.com/posts?limit=100&sort=-createdAt',{
+    let {data} = await axios.get(`https://linked-posts.routemisr.com/posts/${postId}/comments`,{
         headers: {
             token: token
         }
@@ -10,4 +10,3 @@ export async function getAllPosts() {
     return data;
     
 }
-

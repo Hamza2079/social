@@ -10,8 +10,13 @@ export default function Register() {
   const schema = z.object({
     name: z.string().min(2, "Name should be at least 2 characters").nonempty("name is required"),
     email: z.string().email("Invalid email address").nonempty("Email is required"),
-    password: z.string().min(6, "Password should be at least 6 characters").nonempty("Password is required"),
-    rePassword: z.string().nonempty("Password is required"),
+    password: z.string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
+        "Password must contain: uppercase, lowercase, number, and special character (#?!@$%^&*-)"
+      ),
+    rePassword: z.string().nonempty("Please confirm your password"),
     dateOfBirth: z.string().nonempty("Date of Birth is required"),
     gender: z.enum(['female','male'],'enter a valid gender')
   }).refine((data) => data.password === data.rePassword, {
@@ -39,18 +44,18 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
-      <div className="w-full max-w-xl mx-auto px-6 py-8 rounded-3xl bg-slate-900/70
-                      border border-sky-500/40 shadow-[0_25px_80px_rgba(8,47,73,0.95)]
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center py-8" data-theme="dark">
+      <div className="w-full max-w-xl mx-auto px-6 py-8 rounded-3xl bg-base-200
+                      border border-base-300 shadow-2xl
                       backdrop-blur-2xl">
         <div className="mb-6 text-center">
-          <p className="text-[11px] uppercase tracking-[0.25em] text-sky-300/80 mb-2">
+          <p className="text-[11px] uppercase tracking-[0.25em] text-primary mb-2">
             Create account
           </p>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-50">
-            Join <span className="text-sky-300">Linked/Post</span>
+          <h1 className="text-2xl md:text-3xl font-bold text-base-content">
+            Join <span className="text-primary">Linked/Post</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-2">
+          <p className="text-xs opacity-60 mt-2">
             A modern social space with a clean, futuristic interface.
           </p>
         </div>
@@ -59,7 +64,7 @@ export default function Register() {
           <div className="md:col-span-2">
             <label className="text-xs font-medium text-slate-200 mb-1 block">Name</label>
             <input {...register('name')} type="text"
-              className="input input-bordered input-primary w-full bg-slate-900/60 text-slate-50 placeholder:text-slate-500"
+              className="input input-bordered input-primary w-full bg-base-100 text-base-content placeholder:opacity-40"
               placeholder="Your full name" />
             {errors.name && <p className="mt-1 text-xs text-rose-400">{errors.name.message}</p>}
           </div>
@@ -67,7 +72,7 @@ export default function Register() {
           <div className="md:col-span-2">
             <label className="text-xs font-medium text-slate-200 mb-1 block">Email</label>
             <input {...register('email')} type="email"
-              className="input input-bordered input-primary w-full bg-slate-900/60 text-slate-50 placeholder:text-slate-500"
+              className="input input-bordered input-primary w-full bg-base-100 text-base-content placeholder:opacity-40"
               placeholder="name@domain.com" />
             {errors.email && <p className="mt-1 text-xs text-rose-400">{errors.email.message}</p>}
           </div>
@@ -75,15 +80,18 @@ export default function Register() {
           <div>
             <label className="text-xs font-medium text-slate-200 mb-1 block">Password</label>
             <input {...register('password')} type="password"
-              className="input input-bordered input-primary w-full bg-slate-900/60 text-slate-50 placeholder:text-slate-500"
+              className="input input-bordered input-primary w-full bg-base-100 text-base-content placeholder:opacity-40"
               placeholder="••••••••" />
             {errors.password && <p className="mt-1 text-xs text-rose-400">{errors.password.message}</p>}
+            <p className="mt-1 text-xs opacity-50">
+              Must be 8+ characters with uppercase, lowercase, number, and special character (#?!@$%^&*-)
+            </p>
           </div>
 
           <div>
             <label className="text-xs font-medium text-slate-200 mb-1 block">Confirm password</label>
             <input {...register('rePassword')} type="password"
-              className="input input-bordered input-primary w-full bg-slate-900/60 text-slate-50 placeholder:text-slate-500"
+              className="input input-bordered input-primary w-full bg-base-100 text-base-content placeholder:opacity-40"
               placeholder="••••••••" />
             {errors.rePassword && <p className="mt-1 text-xs text-rose-400">{errors.rePassword.message}</p>}
           </div>
@@ -96,8 +104,8 @@ export default function Register() {
           </div>
 
           <div>
-            <p className="text-xs font-medium text-slate-200 mb-1">Gender</p>
-            <div className="flex items-center gap-4 text-xs text-slate-200">
+            <p className="text-xs font-medium opacity-70 mb-1">Gender</p>
+            <div className="flex items-center gap-4 text-xs opacity-70">
               <label htmlFor="fe" className="flex items-center gap-2 cursor-pointer">
                 <input {...register('gender')} type="radio" id="fe" name="gender" value="female"
                   className="radio radio-info" />
@@ -122,9 +130,8 @@ export default function Register() {
 
           <div className="md:col-span-2 mt-2">
             <button
-              className="btn btn-primary w-full bg-sky-500
-                         border-none text-slate-950 font-semibold tracking-wide
-                         hover:bg-sky-400 hover:shadow-[0_12px_30px_rgba(15,23,42,0.9)]
+              className="btn btn-primary w-full text-primary-content font-semibold tracking-wide
+                         hover:shadow-lg
                          disabled:opacity-60"
             >
               {isSubmitting ? "Creating account..." : "Sign up"}
@@ -132,9 +139,9 @@ export default function Register() {
           </div>
         </form>
 
-        <p className="mt-5 text-center text-xs text-slate-400">
+        <p className="mt-5 text-center text-xs opacity-60">
           Already have an account?{" "}
-          <a href="/" className="text-sky-300 hover:text-sky-200 font-medium">Log in</a>
+          <Link to="/" className="text-primary hover:underline font-medium">Log in</Link>
         </p>
       </div>
     </div>

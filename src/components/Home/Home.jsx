@@ -46,17 +46,17 @@ console.log("🟩 data: ", data)
         {data?.map((post) => (
           <div
             key={post._id}
-            className="relative bg-slate-900 border border-slate-700 rounded-3xl p-5 md:p-7
-                       shadow-[0_18px_45px_rgba(15,23,42,0.9)]
-                       hover:border-sky-400 hover:shadow-[0_22px_60px_rgba(15,23,42,0.95)]
-                       hover:-translate-y-[2px] transition-all duration-300"
+            className="card bg-base-200 border border-base-300 shadow-xl
+                       hover:border-primary/50 transition-all duration-300"
           >
-            <Link to={`/postDetails/${post._id}`} className="block">
-              <SinglePost post={post}/>
-            </Link>
+            <div className="card-body p-5 md:p-7">
+              <Link to={`/postDetails/${post._id}`} className="block">
+                <SinglePost post={post}/>
+              </Link>
 
-            <div className="mt-4 border-t border-slate-700/60 pt-3">
-              <Commentitem post={post}/>
+              <div className="mt-4 border-t border-base-300 pt-3">
+                <Commentitem post={post}/>
+              </div>
             </div>
           </div>
         ))}

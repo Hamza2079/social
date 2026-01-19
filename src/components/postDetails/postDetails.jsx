@@ -29,17 +29,15 @@ export default function PostDetails() {
         <div className="mb-4">
           <Link
             to="/home"
-            className="inline-flex items-center gap-2 text-xs text-sky-300 hover:text-sky-100
-                       px-3 py-1 rounded-full bg-slate-900/70 border border-sky-500/40"
+            className="btn btn-sm btn-ghost gap-2 rounded-full border border-primary/40 text-primary"
           >
             ← Back to feed
           </Link>
         </div>
 
-        <div className="relative rounded-3xl bg-slate-900 border border-slate-700
-                        shadow-[0_18px_45px_rgba(15,23,42,0.9)] p-5 md:p-7">
+        <div className="card bg-base-200 border border-base-300 shadow-xl p-5 md:p-7">
           <SinglePost post={data}/>
-          <div className="mt-5 pt-4 border-t border-slate-700/70">
+          <div className="mt-5 pt-4 border-t border-base-300">
             <Commentitem post={data}/>
           </div>
         </div>
