@@ -146,6 +146,11 @@ export default function Navbar() {
                     <NavLink
                       to="/home"
                       onMouseEnter={handleHomeHover}
+                      onClick={(e) => {
+                        // Close dropdown by removing focus
+                        e.currentTarget.blur();
+                        document.activeElement?.blur();
+                      }}
                       className="hover:bg-sky-500/20 hover:text-sky-200 rounded-xl"
                     >
                       Home
@@ -155,6 +160,11 @@ export default function Navbar() {
                     <NavLink
                       to="profile"
                       onMouseEnter={handleProfileHover}
+                      onClick={(e) => {
+                        // Close dropdown by removing focus
+                        e.currentTarget.blur();
+                        document.activeElement?.blur();
+                      }}
                       className="hover:bg-sky-500/20 hover:text-sky-200 rounded-xl"
                     >
                       Profile

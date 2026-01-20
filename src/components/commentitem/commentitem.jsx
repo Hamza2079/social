@@ -233,14 +233,13 @@ export default function Commentitem({ post }) {
               <div className="flex justify-center p-4">
                 <span className="loading loading-spinner loading-sm text-primary"></span>
               </div>
-            ) : (
+            ) : displayComments && displayComments.length > 0 ? (
               displayComments?.map((comment, index) => {
                 // Generic unknown user avatar (like Facebook's default)
                 const defaultAvatar =
                   "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
 
-                const avatar =
-   defaultAvatar;
+                const avatar = defaultAvatar;
 
                 return (
                   <div
@@ -350,6 +349,14 @@ export default function Commentitem({ post }) {
                   </div>
                 );
               })
+            ) : (
+              // Empty state - no comments
+              <div className="text-center py-8 text-base-content/50">
+                <p className="text-sm">No comments yet on this post 💬</p>
+                <p className="text-xs mt-1 opacity-60">
+                  Be the first to comment!
+                </p>
+              </div>
             )}
           </div>
         </div>
