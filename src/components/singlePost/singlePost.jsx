@@ -14,7 +14,7 @@ export default function SinglePost({post}) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const menuRef = useRef(null)
-  console.log(post);
+
 
   // Close menu when clicking outside
   useEffect(() => {
