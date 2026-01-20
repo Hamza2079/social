@@ -22,13 +22,13 @@ export default function Home() {
   } = useInfiniteQuery({
     queryKey: ["all posts"],
     queryFn: ({ pageParam = 1 }) => getAllPosts({ page: pageParam, limit: 10 }),
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       // Use the API's pagination info to determine next page
       const nextPage = lastPage?.paginationInfo?.nextPage;
       // Return undefined if nextPage doesn't exist or is not a valid number
       return nextPage && typeof nextPage === "number" ? nextPage : undefined;
     },
-    initialPageParam: 1,
   });
 
   // Intersection Observer for infinite scroll
