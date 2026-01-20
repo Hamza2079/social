@@ -24,7 +24,9 @@ export default function Home() {
     queryFn: ({ pageParam = 1 }) => getAllPosts({ page: pageParam, limit: 10 }),
     getNextPageParam: (lastPage) => {
       // Use the API's pagination info to determine next page
-      return lastPage.paginationInfo?.nextPage || undefined;
+      const nextPage = lastPage?.paginationInfo?.nextPage;
+      // Return undefined if nextPage doesn't exist or is not a valid number
+      return nextPage && typeof nextPage === "number" ? nextPage : undefined;
     },
     initialPageParam: 1,
   });
