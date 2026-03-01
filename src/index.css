@@ -1,9 +1,54 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-.active {
-  background-color: var(--p); /* primary */
-  color: var(--pc); /* primary-content */
-  border-radius: 9999px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+@plugin "daisyui/theme" {
+  name: "sociallight";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: oklch(0.98 0.005 270);
+  --color-base-200: oklch(0.95 0.008 270);
+  --color-base-300: oklch(0.90 0.012 270);
+  --color-base-content: oklch(0.25 0.02 270);
+  --color-primary: oklch(0.55 0.25 275);
+  --color-primary-content: oklch(0.98 0 0);
+  --color-secondary: oklch(0.65 0.18 190);
+  --color-secondary-content: oklch(0.98 0 0);
+  --color-accent: oklch(0.70 0.18 60);
+  --color-accent-content: oklch(0.20 0 0);
+  --color-error: oklch(0.60 0.22 25);
+  --color-error-content: oklch(0.98 0 0);
+  --color-success: oklch(0.65 0.20 155);
+  --color-success-content: oklch(0.98 0 0);
+  --color-warning: oklch(0.75 0.18 80);
+  --color-warning-content: oklch(0.20 0 0);
+  --rounded-box: 0.75rem;
+  --rounded-btn: 0.5rem;
 }
+
+@plugin "daisyui/theme" {
+  name: "socialdark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: oklch(0.20 0.015 270);
+  --color-base-200: oklch(0.17 0.015 270);
+  --color-base-300: oklch(0.25 0.015 270);
+  --color-base-content: oklch(0.90 0.01 270);
+  --color-primary: oklch(0.65 0.25 275);
+  --color-primary-content: oklch(0.98 0 0);
+  --color-secondary: oklch(0.60 0.16 190);
+  --color-secondary-content: oklch(0.98 0 0);
+  --color-accent: oklch(0.75 0.16 60);
+  --color-accent-content: oklch(0.15 0 0);
+  --color-error: oklch(0.65 0.22 25);
+  --color-error-content: oklch(0.98 0 0);
+  --color-success: oklch(0.65 0.20 155);
+  --color-success-content: oklch(0.98 0 0);
+  --color-warning: oklch(0.75 0.18 80);
+  --color-warning-content: oklch(0.15 0 0);
+  --rounded-box: 0.75rem;
+  --rounded-btn: 0.5rem;
+}
+
+/* Active nav styling handled inline by components */

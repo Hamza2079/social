@@ -1,15 +1,13 @@
 import axios from "axios";
 
-export async function getUserPosts(userId, { limit = 10 } = {}) {
+export async function getUserPosts(userId, { page = 1, limit = 10 } = {}) {
   const token = localStorage.getItem("token");
 
-
-
   let { data } = await axios.get(
-    `https://linked-posts.routemisr.com/users/${userId}/posts?limit=${limit}`,
+    `https://route-posts.routemisr.com/users/${userId}/posts?page=${page}&limit=${limit}&sort=-createdAt`,
     {
       headers: {
-        token: token,
+        Authorization: `Bearer ${token}`,
       },
     },
   );

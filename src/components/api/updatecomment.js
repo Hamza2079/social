@@ -1,15 +1,15 @@
 import axios from "axios";
 
-export async function updateComment(content, commentId) {
-    const token = localStorage.getItem('token');
-    let {data} = await axios.put(`https://linked-posts.routemisr.com/comments/${commentId}`,
-        {content},
+export async function updateComment(formData, commentId, postId) {
+  const token = localStorage.getItem("token");
+  let { data } = await axios.put(
+    `https://route-posts.routemisr.com/posts/${postId}/comments/${commentId}`,
+    formData,
     {
-        headers: {
-            token: token,
-        }
-    }
-) 
-    return data;
-    
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  return data;
 }

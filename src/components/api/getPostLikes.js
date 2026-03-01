@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export async function deletePost(postid) {
+export async function getPostLikes(postId) {
   const token = localStorage.getItem("token");
-  let { data } = await axios.delete(
-    `https://route-posts.routemisr.com/posts/${postid}`,
+  let { data } = await axios.get(
+    `https://route-posts.routemisr.com/posts/${postId}/likes`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

@@ -46,7 +46,7 @@ export default function Register() {
     values;
     try {
       const { data, status } = await axios.post(
-        "https://linked-posts.routemisr.com/users/signup",
+        "https://route-posts.routemisr.com/users/signup",
         values,
       );
       data;

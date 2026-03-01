@@ -29,15 +29,13 @@ export default function Register() {
   async function onSubmit(values) {
     values;
     try {
-      const { data, status } = await axios.post(
-        "https://linked-posts.routemisr.com/users/signin",
+      const { data } = await axios.post(
+        "https://route-posts.routemisr.com/users/signin",
         values,
       );
-      ({ data, status });
-      if (status == 200) {
-        data;
-        setToken(data.token);
-        localStorage.setItem("token", data.token);
+      if (data.success === true) {
+        setToken(data.data.token);
+        localStorage.setItem("token", data.data.token);
         navigate("/home");
       }
     } catch (e) {

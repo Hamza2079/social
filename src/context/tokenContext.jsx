@@ -7,8 +7,8 @@ export default function Tokencontextprovider({ children }) {
   const [token, setToken] = useState(null);
 
   async function getloggedusers() {
-    const res = await getloggeduser()
-    setUserDAta(res.user);
+    const res = await getloggeduser();
+    setUserDAta(res.data?.user || res.user);
   }
 
   // Load user data whenever we have a token (on first load OR after login)
