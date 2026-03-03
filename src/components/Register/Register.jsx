@@ -55,7 +55,7 @@ export default function Register() {
       }
     } catch (e) {
       console.error("🟥 Error: ", e);
-      setError("main", { message: e.response.data.error });
+      setError("main", { message: e.response.data.message });
     }
   }
 

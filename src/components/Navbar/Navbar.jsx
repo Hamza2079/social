@@ -86,12 +86,7 @@ export default function Navbar() {
               )}{" "}
               Profile
             </NavLink>
-            <div className="flex items-center gap-4 px-3 py-3">
-              <Notifications />
-              <span className="text-sm text-base-content/70">
-                Notifications
-              </span>
-            </div>
+            <Notifications mode="sidebar" />
             <button
               onClick={toggleTheme}
               className="flex items-center gap-4 px-3 py-3 rounded-lg text-sm text-base-content/70 hover:bg-base-200 transition-colors"
@@ -107,14 +102,23 @@ export default function Navbar() {
 
           <div className="mt-auto pt-4 border-t border-base-300">
             <div className="flex items-center gap-3 px-3 py-2">
-              <img
-                src={userData?.photo}
-                alt=""
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <span className="text-sm font-medium truncate flex-1">
-                {userData?.name}
-              </span>
+              {userData ? (
+                <>
+                  <img
+                    src={userData.photo}
+                    alt=""
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <span className="text-sm font-medium truncate flex-1">
+                    {userData.name}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div className="w-8 h-8 rounded-full bg-base-300 animate-pulse shrink-0"></div>
+                  <div className="h-3.5 bg-base-300 animate-pulse rounded-md flex-1"></div>
+                </>
+              )}
             </div>
             <button
               onClick={handleLogout}
@@ -173,11 +177,15 @@ export default function Navbar() {
               <div
                 className={`w-7 h-7 rounded-full overflow-hidden ${isProfile ? "ring-2 ring-base-content" : ""}`}
               >
-                <img
-                  src={userData?.photo}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
+                {userData ? (
+                  <img
+                    src={userData.photo}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-base-300 animate-pulse"></div>
+                )}
               </div>
             </NavLink>
           </div>

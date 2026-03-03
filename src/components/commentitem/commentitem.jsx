@@ -793,10 +793,10 @@ export default function Commentitem({ post, externalOpen }) {
                               >
                                 {c.commentCreator?.name || "User"}
                               </Link>{" "}
+                            </p>
                               <span className="text-base-content/80">
                                 {c.content}
                               </span>
-                            </p>
                             {c.image && (
                               <button
                                 onClick={() => setLightboxImage(c.image)}

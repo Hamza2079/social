@@ -20,9 +20,10 @@ import {
   HiChatBubbleOvalLeft,
   HiUserPlus,
   HiShare,
+  HiOutlineXMark,
 } from "react-icons/hi2";
 
-export default function Notifications() {
+export default function Notifications({ mode = "dropdown" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const dropdownRef = useRef(null);
@@ -45,14 +46,13 @@ export default function Notifications() {
     queryFn: ({ pageParam = 1 }) =>
       getNotification(pageParam, filter === "unread"),
     getNextPageParam: (lastPage) => {
-      // The API returns meta.pagination object
       const pagination = lastPage?.meta?.pagination;
       if (pagination && pagination.currentPage < pagination.numberOfPages) {
         return pagination.currentPage + 1;
       }
       return undefined;
     },
-    enabled: isOpen, // Only fetch when dropdown opens
+    enabled: isOpen,
   });
 
   const notifications =
@@ -109,15 +109,193 @@ export default function Notifications() {
     },
   });
 
+  // Close dropdown on outside click (mobile only)
   useEffect(() => {
+    if (mode !== "dropdown") return;
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target))
         setIsOpen(false);
     };
     if (isOpen) document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [isOpen]);
+  }, [isOpen, mode]);
 
+  /* ─── Shared notification list content ─── */
+  const notificationContent = (
+    <>
+      {/* Header */}
+      <div className="flex flex-col border-b border-base-300 bg-base-200/50">
+        <div className="flex items-center justify-between px-4 py-3">
+          <span className="text-base font-bold">Notifications</span>
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <button
+                onClick={() => markAllMutation.mutate()}
+                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+              >
+                <HiOutlineCheck className="w-3.5 h-3.5" /> Mark all read
+              </button>
+            )}
+            {mode === "sidebar" && (
+              <button
+                onClick={() => setIsOpen(false)}
+                className="btn btn-ghost btn-sm btn-circle"
+              >
+                <HiOutlineXMark className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex px-4 gap-4 text-sm mt-1">
+          <button
+            className={`pb-2.5 font-medium border-b-2 transition-colors ${filter === "all" ? "border-primary text-base-content" : "border-transparent text-base-content/60 hover:text-base-content"}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setFilter("all");
+            }}
+          >
+            All
+          </button>
+          <button
+            className={`pb-2.5 font-medium border-b-2 transition-colors flex items-center gap-1.5 ${filter === "unread" ? "border-primary text-base-content" : "border-transparent text-base-content/60 hover:text-base-content"}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setFilter("unread");
+            }}
+          >
+            Unread
+            {unreadCount > 0 && (
+              <span className="bg-error text-error-content text-[10px] px-1.5 py-0.5 rounded-full leading-none">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="flex-1 overflow-y-auto">
+        {notifsLoading ? (
+          <div className="p-8 flex justify-center">
+            <span className="loading loading-spinner text-primary"></span>
+          </div>
+        ) : notifications.length > 0 ? (
+          <div className="divide-y divide-base-300">
+            {notifications.map((notif) => {
+              const details = getNotificationDetails(notif.type);
+              const linkTo =
+                notif.entityType === "post" && notif.entityId
+                  ? `/postDetails/${notif.entityId}`
+                  : `/user/${notif.actor?._id}`;
+
+              return (
+                <Link
+                  key={notif._id}
+                  to={linkTo}
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (!notif.isRead) {
+                      markReadMutation.mutate(notif._id);
+                    }
+                  }}
+                  className={`flex gap-3 p-3 hover:bg-base-200 transition-colors ${!notif.isRead ? "bg-base-200/50" : ""}`}
+                >
+                  <img
+                    src={
+                      notif.actor?.photo ||
+                      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                    }
+                    alt=""
+                    className="w-10 h-10 rounded-full object-cover shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm leading-tight text-base-content/90">
+                      <span className="font-semibold">
+                        {notif.actor?.name || "Someone"}
+                      </span>{" "}
+                      {details.text}
+                    </p>
+                    <span className="text-xs text-base-content/50 mt-1 block">
+                      {new Date(notif.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <div className="shrink-0 mt-1">{details.icon}</div>
+                </Link>
+              );
+            })}
+            {hasNextPage && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fetchNextPage();
+                }}
+                disabled={isFetchingNextPage}
+                className="w-full py-3 text-sm font-semibold text-primary hover:bg-base-200 transition-colors"
+              >
+                {isFetchingNextPage ? (
+                  <span className="loading loading-spinner text-primary loading-sm"></span>
+                ) : (
+                  "Show More"
+                )}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="p-8 text-center text-base-content/50">
+            <HiOutlineBell className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">No notifications yet</p>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  /* ─── SIDEBAR MODE (Desktop) ─── */
+  if (mode === "sidebar") {
+    return (
+      <>
+        {/* Trigger button styled like other sidebar nav items */}
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          className={`flex items-center gap-4 px-3 py-3 rounded-lg text-sm transition-colors hover:bg-base-200 w-full ${isOpen ? "font-bold" : "font-normal text-base-content/70"}`}
+        >
+          <div className="relative">
+            <HiOutlineBell className="w-6 h-6" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] bg-error rounded-full text-[9px] font-bold text-error-content flex items-center justify-center px-0.5">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </div>
+          Notifications
+        </button>
+
+        {/* Backdrop — only covers area to the right of the sidebar */}
+        <div
+          className={`fixed inset-0 left-[220px] bg-black/30 z-40 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          onClick={() => setIsOpen(false)}
+        />
+
+        {/* Sliding panel */}
+        <div
+          className={`fixed top-0 left-[220px] h-screen w-[380px] bg-base-100 border-r border-base-300 z-50 flex flex-col shadow-2xl transition-all duration-300 ease-in-out ${
+            isOpen
+              ? "translate-x-0 opacity-100"
+              : "-translate-x-full opacity-0 pointer-events-none"
+          }`}
+        >
+          {notificationContent}
+        </div>
+      </>
+    );
+  }
+
+  /* ─── DROPDOWN MODE (Mobile) ─── */
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -133,127 +311,8 @@ export default function Notifications() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-10 z-50 w-64 md:w-80 bg-base-100 border border-base-300 rounded-lg shadow-xl overflow-hidden">
-          <div className="flex flex-col border-b border-base-300 bg-base-200/50">
-            <div className="flex items-center justify-between px-3 py-2.5">
-              <span className="text-sm font-bold">Notifications</span>
-              {unreadCount > 0 && (
-                <button
-                  onClick={() => markAllMutation.mutate()}
-                  className="flex items-center gap-1 text-xs text-primary hover:underline font-medium"
-                >
-                  <HiOutlineCheck className="w-3.5 h-3.5" /> Mark all read
-                </button>
-              )}
-            </div>
-            <div className="flex px-3 gap-4 text-sm mt-1">
-              <button
-                className={`pb-2.5 font-medium border-b-2 transition-colors ${filter === "all" ? "border-primary text-base-content" : "border-transparent text-base-content/60 hover:text-base-content"}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFilter("all");
-                }}
-              >
-                All
-              </button>
-              <button
-                className={`pb-2.5 font-medium border-b-2 transition-colors flex items-center gap-1.5 ${filter === "unread" ? "border-primary text-base-content" : "border-transparent text-base-content/60 hover:text-base-content"}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFilter("unread");
-                }}
-              >
-                Unread
-                {unreadCount > 0 && (
-                  <span className="bg-error text-error-content text-[10px] px-1.5 py-0.5 rounded-full leading-none">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-          <div className="max-h-[70vh] overflow-y-auto w-full">
-            {notifsLoading ? (
-              <div className="p-8 flex justify-center">
-                <span className="loading loading-spinner text-primary"></span>
-              </div>
-            ) : notifications.length > 0 ? (
-              <div className="divide-y divide-base-300">
-                {notifications.map((notif) => {
-                  const details = getNotificationDetails(notif.type);
-                  // Link to post details if it relates to a post, else to their profile
-                  const linkTo =
-                    notif.entityType === "post" && notif.entityId
-                      ? `/postDetails/${notif.entityId}`
-                      : `/user/${notif.actor?._id}`;
-
-                  return (
-                    <Link
-                      key={notif._id}
-                      to={linkTo}
-                      onClick={() => {
-                        setIsOpen(false);
-                        if (!notif.isRead) {
-                          markReadMutation.mutate(notif._id);
-                        }
-                      }}
-                      className={`flex gap-3 p-3 hover:bg-base-200 transition-colors ${!notif.isRead ? "bg-base-200/50" : ""}`}
-                    >
-                      <img
-                        src={
-                          notif.actor?.photo ||
-                          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-                        }
-                        alt=""
-                        className="w-10 h-10 rounded-full object-cover shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm leading-tight text-base-content/90">
-                          <span className="font-semibold">
-                            {notif.actor?.name || "Someone"}
-                          </span>{" "}
-                          {details.text}
-                        </p>
-                        <span className="text-xs text-base-content/50 mt-1 block">
-                          {new Date(notif.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              hour: "numeric",
-                              minute: "2-digit",
-                            },
-                          )}
-                        </span>
-                      </div>
-                      <div className="shrink-0 mt-1">{details.icon}</div>
-                    </Link>
-                  );
-                })}
-                {hasNextPage && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fetchNextPage();
-                    }}
-                    disabled={isFetchingNextPage}
-                    className="w-full py-3 text-sm font-semibold text-primary hover:bg-base-200 transition-colors"
-                  >
-                    {isFetchingNextPage ? (
-                      <span className="loading loading-spinner text-primary loading-sm"></span>
-                    ) : (
-                      "Show More"
-                    )}
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="p-8 text-center text-base-content/50">
-                <HiOutlineBell className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No notifications yet</p>
-              </div>
-            )}
-          </div>
+        <div className="absolute right-0 top-10 z-50 w-64 md:w-80 bg-base-100 border border-base-300 rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[70vh]">
+          {notificationContent}
         </div>
       )}
     </div>

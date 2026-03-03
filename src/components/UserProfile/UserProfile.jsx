@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   useQuery,
@@ -14,12 +14,13 @@ import Loader from "../loader/loader";
 import Errorpage from "../errorpage/errorpage";
 import SinglePost from "../singlePost/singlePost";
 import Commentitem from "../commentitem/commentitem";
+import PostSkeleton from "../PostSkeleton/PostSkeleton";
 import toast from "react-hot-toast";
 import { HiOutlineArrowLeft, HiOutlineXMark } from "react-icons/hi2";
 
 export default function UserProfile() {
   const { userId } = useParams();
-  const { userData } = useContext(tokencontext);
+  const { userData, refreshUser } = useContext(tokencontext);
   const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
   const [openCommentsPostId, setOpenCommentsPostId] = useState(null);
@@ -32,11 +33,19 @@ export default function UserProfile() {
   } = useQuery({
     queryKey: ["user-profile", userId],
     queryFn: () => getUserProfile(userId),
-    onSuccess: (data) => {
-      const p = data?.data?.user || data?.user || data?.data;
-      setIsFollowing(p?.followers?.includes(userData?._id) || false);
-    },
   });
+
+  useEffect(() => {
+    if (profileData) {
+      const p =
+        profileData?.data?.user || profileData?.user || profileData?.data;
+      const myId = userData?._id;
+      const isF = p?.followers?.some(
+        (f) => (typeof f === "string" ? f : f._id) === myId,
+      );
+      setIsFollowing(isF || false);
+    }
+  }, [profileData, userData]);
 
   const observerTarget = React.useRef(null);
 
@@ -84,6 +93,8 @@ export default function UserProfile() {
         queryKey: ["user-profile", userData?._id],
       });
       queryClient.invalidateQueries({ queryKey: ["follow-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["all posts"] });
+      refreshUser?.();
     },
     onError: () => {
       setIsFollowing((p) => !p);
@@ -99,9 +110,26 @@ export default function UserProfile() {
 
   const navigate = useNavigate();
 
-  if (profileLoading || postsLoading) return <Loader />;
   if (profileError)
     return <Errorpage title="Error" message={profileErr.message} />;
+
+  const ProfileHeaderSkeleton = () => (
+    <div className="flex items-center gap-8 sm:gap-16 mb-10">
+      <div className="w-20 h-20 sm:w-36 sm:h-36 rounded-full bg-base-300 animate-pulse shrink-0"></div>
+      <div className="flex-1">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="h-6 w-32 bg-base-300 animate-pulse rounded-md"></div>
+          <div className="h-8 w-24 bg-base-300 animate-pulse rounded-lg"></div>
+        </div>
+        <div className="flex gap-8 mb-4">
+          <div className="h-5 w-16 bg-base-300 animate-pulse rounded-md"></div>
+          <div className="h-5 w-20 bg-base-300 animate-pulse rounded-md"></div>
+          <div className="h-5 w-24 bg-base-300 animate-pulse rounded-md"></div>
+        </div>
+        <div className="h-5 w-40 bg-base-300 animate-pulse rounded-md mb-2"></div>
+      </div>
+    </div>
+  );
 
   const profile =
     profileData?.data?.user || profileData?.user || profileData?.data || {};
@@ -134,94 +162,102 @@ export default function UserProfile() {
           <HiOutlineArrowLeft className="w-4 h-4" /> Back
         </Link>
 
-        <div className="flex items-center gap-8 sm:gap-16 mb-10">
-          <div className="w-20 h-20 sm:w-36 sm:h-36 rounded-full bg-linear-to-br from-primary to-secondary p-[3px] shrink-0">
-            <img
-              src={profile.photo}
-              alt=""
-              className="w-full h-full rounded-full object-cover bg-base-100"
-            />
-          </div>
+        {!profileData || profileLoading ? (
+          <ProfileHeaderSkeleton />
+        ) : (
+          <div className="flex items-center gap-8 sm:gap-16 mb-10">
+            <div className="w-20 h-20 sm:w-36 sm:h-36 rounded-full bg-linear-to-br from-primary to-secondary p-[3px] shrink-0">
+              <img
+                src={profile.photo}
+                alt=""
+                className="w-full h-full rounded-full object-cover bg-base-100"
+              />
+            </div>
 
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-4 flex-wrap">
-              <h1 className="text-xl font-normal">{profile.name}</h1>
-              {userData?._id !== userId && (
-                <button
-                  onClick={() => followMutation.mutate()}
-                  disabled={followMutation.isPending}
-                  className={`btn btn-sm font-semibold text-sm rounded-lg ${isFollowing ? "btn-ghost bg-base-200" : "btn-primary"}`}
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-4 flex-wrap">
+                <h1 className="text-xl font-normal">{profile.name}</h1>
+                {userData?._id !== userId && (
+                  <button
+                    onClick={() => followMutation.mutate()}
+                    disabled={followMutation.isPending}
+                    className={`btn btn-sm font-semibold text-sm rounded-lg ${isFollowing ? "btn-ghost bg-base-200" : "btn-primary"}`}
+                  >
+                    {followMutation.isPending ? (
+                      <span className="loading loading-spinner loading-xs"></span>
+                    ) : isFollowing ? (
+                      "Following"
+                    ) : (
+                      "Follow"
+                    )}
+                  </button>
+                )}
+              </div>
+
+              <div className="flex gap-8 text-sm mb-4">
+                <span>
+                  <b>{posts.length}</b> posts
+                </span>
+                <span
+                  onClick={() =>
+                    openFollowModal("Followers", profile.followers)
+                  }
+                  className={
+                    profile.followers?.length > 0
+                      ? "cursor-pointer hover:underline"
+                      : "opacity-70"
+                  }
                 >
-                  {followMutation.isPending ? (
-                    <span className="loading loading-spinner loading-xs"></span>
-                  ) : isFollowing ? (
-                    "Following"
-                  ) : (
-                    "Follow"
-                  )}
-                </button>
+                  <b>
+                    {profile.followersCount || profile.followers?.length || 0}
+                  </b>{" "}
+                  followers
+                </span>
+                <span
+                  onClick={() =>
+                    openFollowModal("Following", profile.following)
+                  }
+                  className={
+                    profile.following?.length > 0
+                      ? "cursor-pointer hover:underline"
+                      : "opacity-70"
+                  }
+                >
+                  <b>
+                    {profile.followingCount || profile.following?.length || 0}
+                  </b>{" "}
+                  following
+                </span>
+              </div>
+
+              <p className="text-sm font-semibold">{profile.name}</p>
+              {profile.gender && (
+                <p className="text-sm text-base-content/70 capitalize">
+                  {profile.gender}
+                </p>
+              )}
+              {profile.dateOfBirth && (
+                <p className="text-sm text-base-content/70">
+                  Born{" "}
+                  {new Date(profile.dateOfBirth).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+              )}
+              {profile.createdAt && (
+                <p className="text-sm text-base-content/50 mt-1">
+                  Joined{" "}
+                  {new Date(profile.createdAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
               )}
             </div>
-
-            <div className="flex gap-8 text-sm mb-4">
-              <span>
-                <b>{posts.length}</b> posts
-              </span>
-              <span
-                onClick={() => openFollowModal("Followers", profile.followers)}
-                className={
-                  profile.followers?.length > 0
-                    ? "cursor-pointer hover:underline"
-                    : "opacity-70"
-                }
-              >
-                <b>
-                  {profile.followersCount || profile.followers?.length || 0}
-                </b>{" "}
-                followers
-              </span>
-              <span
-                onClick={() => openFollowModal("Following", profile.following)}
-                className={
-                  profile.following?.length > 0
-                    ? "cursor-pointer hover:underline"
-                    : "opacity-70"
-                }
-              >
-                <b>
-                  {profile.followingCount || profile.following?.length || 0}
-                </b>{" "}
-                following
-              </span>
-            </div>
-
-            <p className="text-sm font-semibold">{profile.name}</p>
-            {profile.gender && (
-              <p className="text-sm text-base-content/70 capitalize">
-                {profile.gender}
-              </p>
-            )}
-            {profile.dateOfBirth && (
-              <p className="text-sm text-base-content/70">
-                Born{" "}
-                {new Date(profile.dateOfBirth).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            )}
-            {profile.createdAt && (
-              <p className="text-sm text-base-content/50 mt-1">
-                Joined{" "}
-                {new Date(profile.createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
-            )}
           </div>
-        </div>
+        )}
 
         <div className="border-t border-base-300"></div>
         <div className="flex justify-center gap-12 text-xs font-semibold tracking-wider uppercase text-base-content/40 -mt-px">
@@ -229,7 +265,12 @@ export default function UserProfile() {
         </div>
 
         <div className="max-w-[470px] mx-auto space-y-0 mt-4">
-          {posts.length > 0 ? (
+          {!postsData || postsLoading ? (
+            <div className="space-y-3">
+              <PostSkeleton />
+              <PostSkeleton />
+            </div>
+          ) : posts.length > 0 ? (
             posts.map((post) => (
               <article
                 key={post._id}
@@ -237,6 +278,8 @@ export default function UserProfile() {
               >
                 <SinglePost
                   post={post}
+                  isFollowingUser={isFollowing}
+                  onFollowToggle={() => followMutation.mutate()}
                   onCommentClick={() =>
                     setOpenCommentsPostId((prev) =>
                       prev === post._id ? null : post._id,
@@ -296,50 +339,112 @@ export default function UserProfile() {
 
             <div className="overflow-y-auto p-4 space-y-4 shadow-inner">
               {followModalConfig.users.map((u) => (
-                <div key={u._id} className="flex items-center justify-between">
-                  <div
-                    onClick={() => {
-                      closeFollowModal();
-                      if (userData?._id === u._id) {
-                        navigate("/profile");
-                      } else {
-                        navigate(`/user/${u._id}`);
-                      }
-                    }}
-                    className="flex items-center gap-3 cursor-pointer group"
-                  >
-                    <img
-                      src={
-                        u.photo ||
-                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-                      }
-                      alt={u.name}
-                      className="w-10 h-10 rounded-full object-cover border border-base-300 group-hover:border-primary transition-colors"
-                    />
-                    <div>
-                      <p className="font-semibold text-sm group-hover:text-primary transition-colors">
-                        {u.name}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      closeFollowModal();
-                      if (userData?._id === u._id) {
-                        navigate("/profile");
-                      } else {
-                        navigate(`/user/${u._id}`);
-                      }
-                    }}
-                    className="btn btn-sm btn-ghost bg-base-200 text-xs rounded-lg"
-                  >
-                    View
-                  </button>
-                </div>
+                <FollowModalRow
+                  key={u._id}
+                  user={u}
+                  currentUserId={userData?._id}
+                  userData={userData}
+                  onNavigate={(path) => {
+                    closeFollowModal();
+                    navigate(path);
+                  }}
+                  onFollowChanged={() => {
+                    queryClient.invalidateQueries({
+                      queryKey: ["user-profile", userId],
+                    });
+                    queryClient.invalidateQueries({
+                      queryKey: ["user-profile", userData?._id],
+                    });
+                    queryClient.invalidateQueries({
+                      queryKey: ["follow-suggestions"],
+                    });
+                    queryClient.invalidateQueries({ queryKey: ["all posts"] });
+                    refreshUser?.();
+                  }}
+                />
               ))}
             </div>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function FollowModalRow({
+  user,
+  currentUserId,
+  userData,
+  onNavigate,
+  onFollowChanged,
+}) {
+  const isMe = currentUserId === user._id;
+  const [isFollowingThis, setIsFollowingThis] = useState(() => {
+    return (
+      userData?.following?.some(
+        (f) => (typeof f === "string" ? f : f._id) === user._id,
+      ) || false
+    );
+  });
+  const [isPending, setIsPending] = useState(false);
+
+  // Sync state when userData updates (e.g. after another follow action)
+  useEffect(() => {
+    setIsFollowingThis(
+      userData?.following?.some(
+        (f) => (typeof f === "string" ? f : f._id) === user._id,
+      ) || false,
+    );
+  }, [userData, user._id]);
+
+  const handleFollow = async () => {
+    setIsPending(true);
+    setIsFollowingThis((prev) => !prev);
+    try {
+      await followUser(user._id);
+      onFollowChanged?.();
+    } catch {
+      setIsFollowingThis((prev) => !prev);
+      toast.error("Failed");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div
+        onClick={() => onNavigate(isMe ? "/profile" : `/user/${user._id}`)}
+        className="flex items-center gap-3 cursor-pointer group flex-1 min-w-0"
+      >
+        <img
+          src={
+            user.photo ||
+            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+          }
+          alt={user.name}
+          className="w-10 h-10 rounded-full object-cover border border-base-300 group-hover:border-primary transition-colors shrink-0"
+        />
+        <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">
+          {user.name}
+        </p>
+      </div>
+      {!isMe && (
+        <button
+          onClick={handleFollow}
+          disabled={isPending}
+          className={`btn btn-sm font-semibold text-xs rounded-lg ml-2 min-w-[90px] ${
+            isFollowingThis ? "btn-ghost bg-base-200" : "btn-primary"
+          }`}
+        >
+          {isPending ? (
+            <span className="loading loading-spinner loading-xs"></span>
+          ) : isFollowingThis ? (
+            "Following"
+          ) : (
+            "Follow"
+          )}
+        </button>
       )}
     </div>
   );

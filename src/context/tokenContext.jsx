@@ -27,7 +27,9 @@ export default function Tokencontextprovider({ children }) {
   }, [token]);
 
   return (
-    <tokencontext.Provider value={{ token, setToken, userData }}>
+    <tokencontext.Provider
+      value={{ token, setToken, userData, refreshUser: getloggedusers }}
+    >
       {children}
     </tokencontext.Provider>
   );
